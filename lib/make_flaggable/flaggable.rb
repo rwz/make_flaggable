@@ -16,7 +16,7 @@ module MakeFlaggable
       if flag.nil?
         flaggings
       else
-        flaggings.where(:flag => flag.to_s)
+        flaggings.with_flag(flag)
       end
     end
 

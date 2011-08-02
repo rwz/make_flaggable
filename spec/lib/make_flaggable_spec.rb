@@ -24,6 +24,13 @@ describe "Make Flaggable" do
     @flagger.flag!(@flaggable, :inappropriate)
     @flagger.flaggings.reload.length.should == 1
   end
+  
+  it "should have flaggings by flag name" do
+    @flagger.flag!(@flaggable, :inappropriate)
+    @flagger.flag!(@flaggable, :favorite)
+    @flagger.flaggings.reload.length.should == 2
+    @flagger.flaggings.with_flag(:favorite).length.should == 1
+  end
 
   describe "flagger" do
     describe "flag" do
