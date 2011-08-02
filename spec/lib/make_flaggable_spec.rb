@@ -3,7 +3,10 @@ require File.expand_path('../../spec_helper', __FILE__)
 describe "Make Flaggable" do
   before(:each) do
     @flaggable  = FlaggableModel.create(:name => "Flaggable 1")
+    @flaggable2 = FlaggableModel.create(:name => "Flaggable 2")
+
     @flagger    = FlaggerModel.create(:name => "Flagger 1")
+    @flagger2   = FlaggerModel.create(:name => "Flagger 2")
   end
 
   it "should create a flaggable instance" do
@@ -42,6 +45,19 @@ describe "Make Flaggable" do
         @flaggable.flaggings.length.should == 0
         @flagger.flag!(@flaggable, :inappropriate)
         @flagger.flag(@flaggable, :inappropriate).should == nil
+      end
+
+      it "should remove related flaggings when destroyed" do
+        @flagger.flag!(@flaggable, :inappropriate)
+        @flagger2.flag!(@flaggable, :inappropriate)
+        @flaggable.flaggings.count.should == 2
+
+        @flagger.destroy
+        @flaggable.flaggings.reload.count.should == 1
+        @flaggable.flaggings.first.flagger.should == @flagger2
+
+        @flagger2.destroy
+        @flaggable.flaggings.reload.should be_empty
       end
     end
 
@@ -101,6 +117,20 @@ describe "Make Flaggable" do
       @flaggable.flagged?.should == true
       @flagger.unflag!(@flaggable, :favorite)
       @flaggable.flagged?.should == false
+    end
+
+    it "should remove related flaggings when destroyed" do
+      @flagger.flag!(@flaggable, :inappropriate)
+      @flagger.flag!(@flaggable2, :inappropriate)
+
+      @flagger.flaggings.count.should == 2
+
+      @flaggable.destroy
+      @flagger.flaggings.reload.count.should == 1
+      @flagger.flaggings.first.flaggable.should == @flaggable2
+
+      @flaggable2.destroy
+      @flagger.flaggings.reload.should be_empty
     end
   end
 end
